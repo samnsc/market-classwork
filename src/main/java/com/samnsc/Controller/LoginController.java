@@ -30,9 +30,7 @@ public class LoginController {
                     }
                     case CASHIER: {
                         loginView.setVisible(false);
-                        CashierView cashierView = new CashierView();
-                        cashierView.setVisible(true);
-                        cashierView.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                        CashierController cashierView = new CashierController(worker);
                         break;
                     }
                     case WAREHOUSE: {

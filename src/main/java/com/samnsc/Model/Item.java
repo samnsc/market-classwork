@@ -6,12 +6,16 @@ public class Item {
     private final Product product;
     private double amount;
 
-    public Item(String productCode, double amount) throws SQLException, InstantiationException {
+    public Item(String productCode, double amount) throws SQLException, InstantiationException, IllegalArgumentException {
         this.product = Product.fetch(productCode);
         this.amount = amount;
 
         if (this.product == null) {
             throw new InstantiationException();
+        }
+
+        if (amount <= 0 || (this.product.getMeasurementType() == Product.MeasurementType.UNIT && amount % 1 != 0)) {
+            throw new IllegalArgumentException();
         }
     }
 

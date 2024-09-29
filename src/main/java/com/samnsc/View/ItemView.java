@@ -1,27 +1,46 @@
 package com.samnsc.View;
 
 import com.samnsc.Model.Item;
+import com.samnsc.Model.Product;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
 
 public class ItemView extends JPanel {
-    private final JLabel productAmountLabel;
+    private final Item item;
     private final JLabel priceLabel;
 
-    public ItemView(Item item) {
+    public ItemView(Item item, ActionListener listener) {
         super();
+        this.item = item;
 
         JLabel productNameLabel = new JLabel(item.getProduct().getName());
 
-        productAmountLabel = new JLabel(String.valueOf(item.getAmount()));
+        priceLabel = new JLabel(String.format("%.2f x %s = %.2f", item.getProduct().getSellingPrice(), getFormattedProductAmount(item.getAmount()), item.getProduct().getSellingPrice() * item.getAmount()));
 
-        priceLabel = new JLabel(String.valueOf(item.getProduct().getSellingPrice()));
+        JButton removeItemButton = new JButton("Remover");
+        removeItemButton.addActionListener(listener);
 
-        this.add(productNameLabel);
-        this.add(productAmountLabel);
+        JPanel priceAndOptionsPanel = new JPanel();
+        priceAndOptionsPanel.add(priceLabel);
+        priceAndOptionsPanel.add(removeItemButton);
+
+        this.setLayout(new BorderLayout());
+        this.add(productNameLabel, BorderLayout.CENTER);
+        this.add(priceAndOptionsPanel, BorderLayout.EAST);
+        this.setMaximumSize(new Dimension(Integer.MAX_VALUE, (int) this.getPreferredSize().getHeight()));
     }
 
     public void changeAmount(double amount) {
-        productAmountLabel.setText(String.valueOf(amount));
+        priceLabel.setText(String.format("%.2f x %s = %.2f", item.getProduct().getSellingPrice(), getFormattedProductAmount(item.getAmount()), item.getProduct().getSellingPrice() * item.getAmount()));
+    }
+
+    private String getFormattedProductAmount(double amount) {
+        if (item.getProduct().getMeasurementType() == Product.MeasurementType.UNIT) {
+            return String.valueOf((int) item.getAmount());
+        } else {
+            return String.valueOf(item.getAmount());
+        }
     }
 }

@@ -66,26 +66,6 @@ public class Database {
                     ");";
             statement.addBatch(workerTable);
 
-            String couponTable = "CREATE TABLE IF NOT EXISTS \"coupon\" (" +
-                    "\"id\"                     INTEGER     NOT NULL UNIQUE," +
-                    "\"code\"                   TEXT        NOT NULL UNIQUE," +
-                    "\"valid_until\"            DATE," +
-                    "\"discount_amount\"        DOUBLE," +
-                    "\"discount_percentage\"    DOUBLE," +
-                    "PRIMARY KEY(\"id\" AUTOINCREMENT)," +
-                    "CHECK (discount_amount IS NOT NULL AND discount_percentage IS NULL OR discount_amount IS NULL AND discount_percentage IS NOT NULL)" +
-                    ");";
-            statement.addBatch(couponTable);
-
-            String couponToClientTable = "CREATE TABLE IF NOT EXISTS \"coupon_to_client\" (" +
-                    "\"coupon_id\"             INTEGER     NOT NULL," +
-                    "\"eligible_client_id\"    INTEGER," +
-                    "PRIMARY KEY(\"coupon_id\", \"eligible_client_id\")," +
-                    "FOREIGN KEY(\"coupon_id\") REFERENCES \"coupon\"(\"id\")," +
-                    "FOREIGN KEY(\"eligible_client_id\") REFERENCES \"client\"(\"user_id\")" +
-                    ");";
-            statement.addBatch(couponToClientTable);
-
             String productTable = "CREATE TABLE IF NOT EXISTS \"product\" (" +
                     "\"id\"                     INTEGER     NOT NULL UNIQUE," +
                     "\"name\"                   TEXT        NOT NULL," +
@@ -97,15 +77,6 @@ public class Database {
                     "PRIMARY KEY(\"id\" AUTOINCREMENT)" +
                     ");";
             statement.addBatch(productTable);
-
-            String couponToProductTable = "CREATE TABLE IF NOT EXISTS \"coupon_to_product\" (" +
-                    "\"coupon_id\"          INTEGER     NOT NULL," +
-                    "\"valid_product_id\"   INTEGER     NOT NULL," +
-                    "PRIMARY KEY(\"coupon_id\", \"valid_product_id\")," +
-                    "FOREIGN KEY(\"coupon_id\") REFERENCES \"coupon\"(\"id\")," +
-                    "FOREIGN KEY(\"valid_product_id\") REFERENCES \"product\"(\"id\")" +
-                    ");";
-            statement.addBatch(couponToProductTable);
 
             String discountTable = "CREATE TABLE IF NOT EXISTS \"discount\" (" +
                     "\"id\"                 INTEGER     NOT NULL UNIQUE," +
@@ -135,11 +106,11 @@ public class Database {
                     "\"purchase_price\"     DOUBLE      NOT NULL," +
                     "\"payment_method\"     TEXT        CHECK(\"payment_method\" IN ('MONEY', 'CREDIT_CARD', 'DEBIT_CARD', 'CHECK', 'PIX')) NOT NULL," +
                     "\"cashier_id\"         INTEGER," +
-                    "\"client_id\"          INTEGER," +
+                    "\"user_id\"            INTEGER," +
                     "\"purchase_date\"      DATE        NOT NULL DEFAULT CURRENT_DATE," +
                     "PRIMARY KEY(\"id\" AUTOINCREMENT)," +
                     "FOREIGN KEY(\"cashier_id\") REFERENCES \"worker\"(\"user_id\")," +
-                    "FOREIGN KEY(\"client_id\") REFERENCES \"client\"(\"user_id\")" +
+                    "FOREIGN KEY(\"user_id\") REFERENCES \"user\"(\"id\")" +
                     ");";
             statement.addBatch(purchaseTable);
 
@@ -153,15 +124,6 @@ public class Database {
                     "FOREIGN KEY(\"product_id\") REFERENCES \"product\"(\"id\")" +
                     ");";
             statement.addBatch(purchaseToProductTable);
-
-            String purchaseToCouponTable = "CREATE TABLE IF NOT EXISTS \"purchase_to_coupon\" (" +
-                    "\"purchase_id\"    INTEGER     NOT NULL," +
-                    "\"coupon_id\"      INTEGER     NOT NULL," +
-                    "PRIMARY KEY(\"purchase_id\", \"coupon_id\")," +
-                    "FOREIGN KEY(\"purchase_id\") REFERENCES \"purchase\"(\"id\")," +
-                    "FOREIGN KEY(\"coupon_id\") REFERENCES \"coupon\"(\"id\")" +
-                    ");";
-            statement.addBatch(purchaseToCouponTable);
 
             statement.executeBatch();
         } catch (SQLException exception) {
@@ -197,35 +159,6 @@ public class Database {
                     "ON CONFLICT DO NOTHING;";
             statement.addBatch(createWorkers);
 
-            String createCoupons = "INSERT INTO \"coupon\" (code, valid_until, discount_amount, discount_percentage) " +
-                    "VALUES " +
-                    "   ('CUPOM10%', CURRENT_DATE - 1, NULL, 10)," + // teste para um cupom que não é mais válido
-                    "   ('CUPOM20%', CURRENT_DATE + 1, NULL, 20)," + // teste para um cupom que ainda é válido
-                    "   ('DESCONTOFUNCIONARIOS', NULL, NULL, 5)," + // teste para um cupom que nunca expira
-                    "   ('CUPOM5', CURRENT_DATE, 5, NULL)," + // teste para cupom com desconto fixo
-                    "   ('CUPOM5COCA', NULL, 5, NULL) " + // teste para um cupom que só é válido para um produto
-                    "ON CONFLICT DO NOTHING;";
-            statement.addBatch(createCoupons);
-
-            // não ter uma relação nessa tabela significa que nenhum cliente pode usar esse cupom
-            String createCouponsToClients = "INSERT INTO \"coupon_to_client\" (coupon_id, eligible_client_id) " +
-                    "VALUES " +
-                    "   (1, 1)," +
-                    "   (2, 1)," +
-                    "   (4, 4)," +
-                    "   (5, 1) " +
-                    "ON CONFLICT DO NOTHING;";
-            statement.addBatch(createCouponsToClients);
-
-            String createCouponsToClientsForWorkers = "INSERT INTO \"coupon_to_client\" (coupon_id, eligible_client_id) " +
-                    "SELECT " +
-                    "   3, \"worker\".user_id " +
-                    "       FROM \"worker\" " +
-                    "       INNER JOIN \"client\" " +
-                    "           ON \"worker\".user_id == \"client\".user_id " +
-                    "ON CONFLICT DO NOTHING;";
-            statement.addBatch(createCouponsToClientsForWorkers);
-
             String createProducts = "INSERT INTO \"product\" (name, product_code, measurement_type, stock, market_purchase_price, selling_price) " +
                     "VALUES " +
                     "   ('Nescau', '0010001000015', 'UNIT', 50, 5, 10)," +
@@ -237,13 +170,6 @@ public class Database {
                     "   ('Biscoito', '0020003000012','UNIT', 150, 4, 7) " + // pedaços de bife de boi pré-cortados e separados em pacotes de 1kg cada
                     "ON CONFLICT DO NOTHING;";
             statement.addBatch(createProducts);
-
-            // não ter uma relação nessa tabela significa que todos os produtos são válidos para esse cupom
-            String createCouponsToProducts = "INSERT INTO \"coupon_to_product\" (coupon_id, valid_product_id) " +
-                    "VALUES " +
-                    "   (5, 4) " +
-                    "ON CONFLICT DO NOTHING;";
-            statement.addBatch(createCouponsToProducts);
 
             String createDiscounts = "INSERT INTO \"discount\" (product_id, original_price, discounted_price, valid_until) " +
                     "VALUES " +
@@ -269,7 +195,7 @@ public class Database {
                     "ON CONFLICT DO NOTHING;";
             statement.addBatch(createRestocks);
 
-            String createPurchases = "INSERT INTO \"purchase\" (purchase_price, payment_method, cashier_id, client_id, purchase_date) " +
+            String createPurchases = "INSERT INTO \"purchase\" (purchase_price, payment_method, cashier_id, user_id, purchase_date) " +
                     "VALUES " +
                     "   (50, 'PIX', 2, 4, CURRENT_DATE)," +
                     "   (19, 'CREDIT_CARD', 2, 1, CURRENT_DATE)," +
@@ -285,12 +211,6 @@ public class Database {
                     "   (3, 4, 1, 4) " +
                     "ON CONFLICT DO NOTHING;";
             statement.addBatch(createPurchasesToProducts);
-
-            String createPurchasesToCoupons = "INSERT INTO \"purchase_to_coupon\" (purchase_id, coupon_id) " +
-                    "VALUES " +
-                    "   (2, 3) " +
-                    "ON CONFLICT DO NOTHING";
-            statement.addBatch(createPurchasesToCoupons);
 
             statement.executeBatch();
         } catch (SQLException exception) {

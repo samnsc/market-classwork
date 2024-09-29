@@ -9,10 +9,10 @@ public class CashierController {
     private final Worker worker;
     private final CashierView cashierView;
 
-    public CashierController(Worker worker) {
-        this.worker = worker;
+    public CashierController(Worker cashier) {
+        this.worker = cashier;
 
-        cashierView = new CashierView();
+        cashierView = new CashierView(cashier);
         cashierView.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         cashierView.setVisible(true);
     }
