@@ -17,7 +17,7 @@ public class ItemView extends JPanel {
 
         JLabel productNameLabel = new JLabel(item.getProduct().getName());
 
-        priceLabel = new JLabel(String.format("%.2f x %s = %.2f", item.getProduct().getSellingPrice(), getFormattedProductAmount(item.getAmount()), item.getProduct().getSellingPrice() * item.getAmount()));
+        priceLabel = new JLabel(String.format("%.2f x %s = %.2f", item.getProduct().getSellingPrice(), getFormattedProductAmount(), item.getProduct().getSellingPrice() * item.getAmount()));
 
         JButton removeItemButton = new JButton("Remover");
         removeItemButton.addActionListener(listener);

@@ -87,7 +87,7 @@ public class CashierPanelController {
         String clientIdentification = JOptionPane.showInputDialog(null, "Digite o CPF do cliente no formato (xxx.xxx.xxx-xx):");
         User user = User.getUserFromIdentification(clientIdentification);
 
-        if (!clientIdentification.isEmpty() && user == null) {
+        if (clientIdentification != null && !clientIdentification.isEmpty() && user == null) {
             cashierPanelView.setErrorLabelText("Dados do cliente não foram encontrados!");
             cashierPanelView.setErrorLabelVisibility(true);
             return;
