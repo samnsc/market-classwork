@@ -101,7 +101,6 @@ public class Worker extends User{
     public enum WorkerType {
         MANAGER,
         CASHIER,
-        WAREHOUSE
     }
 
     public static Worker checkCredentials(String username, String password) throws SQLException {

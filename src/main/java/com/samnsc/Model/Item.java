@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 public class Item {
     private final Product product;
-    private double amount;
+    private final double amount;
 
     public Item(String productCode, double amount) throws SQLException, InstantiationException, IllegalArgumentException {
         this.product = Product.fetch(productCode);
@@ -27,7 +27,4 @@ public class Item {
         return amount;
     }
 
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
 }

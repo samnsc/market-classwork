@@ -13,6 +13,7 @@ public class CashierPanelView extends JPanel {
     public CashierPanelView(ActionListener addToListButtonAction, ActionListener finalizePurchaseAction) {
         super();
         this.setMinimumSize(new Dimension(1280, 720));
+        this.setName("Caixa");
 
         itemListPanel = new JPanel();
         itemListPanel.setLayout(new BoxLayout(itemListPanel, BoxLayout.Y_AXIS));

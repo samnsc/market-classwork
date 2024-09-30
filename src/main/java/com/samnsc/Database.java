@@ -57,12 +57,12 @@ public class Database {
                     "\"user_id\"        INTEGER     NOT NULL UNIQUE," +
                     "\"username\"       TEXT        NOT NULL UNIQUE," +
                     "\"password\"       TEXT        NOT NULL," +
-                    "\"worker_type\"    TEXT        NOT NULL CHECK(\"worker_type\" IN ('CASHIER', 'MANAGER', 'WAREHOUSE'))," +
+                    "\"worker_type\"    TEXT        NOT NULL CHECK(\"worker_type\" IN ('CASHIER', 'MANAGER'))," +
                     "\"start_date\"     DATE        NOT NULL DEFAULT CURRENT_DATE," +
                     "\"end_date\"       DATE," +
                     "PRIMARY KEY(\"user_id\" AUTOINCREMENT)," +
                     "FOREIGN KEY(\"user_id\") REFERENCES \"user\"(\"id\")," +
-                    "CHECK (end_date IS NULL OR start_date < end_date)" +
+                    "CHECK (end_date IS NULL OR start_date <= end_date)" +
                     ");";
             statement.addBatch(workerTable);
 
@@ -71,35 +71,10 @@ public class Database {
                     "\"name\"                   TEXT        NOT NULL," +
                     "\"product_code\"           TEXT        NOT NULL UNIQUE," + // codificação seguindo o padrão EAN-13 (3 primeiros números são o código do país, tamanho variável do código da marca, tamanho variável do código do produto e um check-digit)
                     "\"measurement_type\"       TEXT        NOT NULL CHECK(\"measurement_type\" IN ('UNIT', 'KILOGRAM'))," +
-                    "\"stock\"                  DOUBLE      NOT NULL," +
-                    "\"market_purchase_price\"  DOUBLE," +
                     "\"selling_price\"          DOUBLE," +
                     "PRIMARY KEY(\"id\" AUTOINCREMENT)" +
                     ");";
             statement.addBatch(productTable);
-
-            String discountTable = "CREATE TABLE IF NOT EXISTS \"discount\" (" +
-                    "\"id\"                 INTEGER     NOT NULL UNIQUE," +
-                    "\"product_id\"         INTEGER     NOT NULL," +
-                    "\"original_price\"     DOUBLE      NOT NULL," +
-                    "\"discounted_price\"   DOUBLE      NOT NULL," +
-                    "\"valid_until\"        DATE," +
-                    "PRIMARY KEY(\"id\" AUTOINCREMENT)," +
-                    "FOREIGN KEY(\"product_id\") REFERENCES \"product\"(\"id\")" +
-                    ");";
-            statement.addBatch(discountTable);
-
-            String restockTable = "CREATE TABLE IF NOT EXISTS \"restock\" (" +
-                    "\"id\"                 INTEGER     NOT NULL UNIQUE," +
-                    "\"restocked_item_id\"  INTEGER     NOT NULL," +
-                    "\"amount_added\"       INTEGER     NOT NULL," +
-                    "\"restock_date\"       DATE        NOT NULL DEFAULT CURRENT_DATE," +
-                    "\"worker_id\"          INTEGER," +
-                    "PRIMARY KEY(\"id\" AUTOINCREMENT)," +
-                    "FOREIGN KEY(\"restocked_item_id\") REFERENCES \"product\"(\"id\")," +
-                    "FOREIGN KEY(\"worker_id\") REFERENCES \"worker\"(\"user_id\")" +
-                    ");";
-            statement.addBatch(restockTable);
 
             String purchaseTable = "CREATE TABLE IF NOT EXISTS \"purchase\" (" +
                     "\"id\"                 INTEGER     NOT NULL UNIQUE," +
@@ -139,67 +114,41 @@ public class Database {
                     "VALUES " +
                     "   ('Samuel Nascimento', '000.000.000-00', 'me@samnsc.com', NULL)," +
                     "   ('Gabriel Malosto', '000.000.000-01', 'me@gabdumal.com', '+55 (32) 90000-0000')," +
-                    "   ('Gabriel Souza', '000.000.000-02', NULL, NULL)," +
-                    "   ('Gleiph Ghioto', '000.000.000-03', NULL, '+55 (31) 90000-0000') " +
+                    "   ('Gabriel Souza', '000.000.000-02', NULL, '+55 (31) 90000-0000') " +
                     "ON CONFLICT DO NOTHING;";
             statement.addBatch(createUsers);
 
             String createClients = "INSERT INTO \"client\" (user_id) " +
                     "VALUES " +
                     "   (1)," +
-                    "   (4) " +
+                    "   (3) " +
                     "ON CONFLICT DO NOTHING;";
             statement.addBatch(createClients);
 
             String createWorkers = "INSERT INTO \"worker\" (user_id, username, password, worker_type) " +
                     "VALUES " +
                     "   (1, 'samnsc', 'b7e94be513e96e8c45cd23d162275e5a12ebde9100a425c4ebcdd7fa4dcd897c', 'MANAGER')," + // sha256sum hash for "senha"
-                    "   (2, 'gabdumal', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'CASHIER')," + // sha256sum hash for "123456"
-                    "   (3, 'ghdesouza', '55a5e9e78207b4df8699d60886fa070079463547b095d1a05bc719bb4e6cd251', 'WAREHOUSE') " + // sha256sum hash for "senha123"
+                    "   (2, 'gabdumal', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'CASHIER')" + // sha256sum hash for "123456"
                     "ON CONFLICT DO NOTHING;";
             statement.addBatch(createWorkers);
 
-            String createProducts = "INSERT INTO \"product\" (name, product_code, measurement_type, stock, market_purchase_price, selling_price) " +
+            String createProducts = "INSERT INTO \"product\" (name, product_code, measurement_type, selling_price) " +
                     "VALUES " +
-                    "   ('Nescau', '0010001000015', 'UNIT', 50, 5, 10)," +
-                    "   ('Batata', '0019999900017','KILOGRAM', 120.85, 2.3, 3.8)," + // stock em quilograma e preços por kilo
-                    "   ('Alho', '0019999900024', 'KILOGRAM', 230.32, 2, 2.5)," +
-                    "   ('Coca-Cola', '0010002000014', 'UNIT', 30, 4, 10)," +
-                    "   ('Bife de Boi Fresco', '0019999900031','KILOGRAM', 240, 20, 30)," +
-                    "   ('Bife de Boi Congelado - 1Kg', '0019999900048', 'UNIT', 20, 15, 25)," +
-                    "   ('Biscoito', '0020003000012','UNIT', 150, 4, 7) " + // pedaços de bife de boi pré-cortados e separados em pacotes de 1kg cada
+                    "   ('Nescau', '0010001000015', 'UNIT', 10)," +
+                    "   ('Batata', '0019999900017','KILOGRAM', 3.8)," + // stock em quilograma e preços por kilo
+                    "   ('Alho', '0019999900024', 'KILOGRAM', 2.5)," +
+                    "   ('Coca-Cola', '0010002000014', 'UNIT', 10)," +
+                    "   ('Bife de Boi Fresco', '0019999900031','KILOGRAM', 30)," +
+                    "   ('Bife de Boi Congelado - 1Kg', '0019999900048', 'UNIT', 25)," +
+                    "   ('Biscoito', '0020003000012','UNIT', 7) " + // pedaços de bife de boi pré-cortados e separados em pacotes de 1kg cada
                     "ON CONFLICT DO NOTHING;";
             statement.addBatch(createProducts);
 
-            String createDiscounts = "INSERT INTO \"discount\" (product_id, original_price, discounted_price, valid_until) " +
-                    "VALUES " +
-                    "   (4, 10, 4, CURRENT_DATE + 1)," + // esse é um teste para garantir que o valor de um produto nunca será negativo (desconto com cupom de 5 reais)
-                    "   (1, 10, 7, NULL)," + // válido para sempre
-                    "   (2, 3.8, 3.5, CURRENT_DATE - 1)," + // teste para um desconto expirado
-                    "   (7, 7, 6, CURRENT_DATE + 1)," +
-                    "   (7, 7, 5, CURRENT_DATE + 1) " + // teste para garantir que dentre dois cupons válidos o com maior desconto sempre é aplicado
-                    "ON CONFLICT DO NOTHING;";
-            statement.addBatch(createDiscounts);
-
-            String createRestocks = "INSERT INTO \"restock\" (restocked_item_id, amount_added, restock_date, worker_id) " +
-                    "VALUES " +
-                    "   (1, 50, CURRENT_DATE, 3)," +
-                    "   (2, 100, CURRENT_DATE, 3)," +
-                    "   (2, 20.85, CURRENT_DATE, 1)," +
-                    "   (3, 230.32, CURRENT_DATE, 1)," +
-                    "   (4, 10, CURRENT_DATE, 1)," +
-                    "   (4, 20, CURRENT_DATE, 3)," +
-                    "   (5, 240, CURRENT_DATE, 3)," +
-                    "   (6, 20, CURRENT_DATE, 3)," +
-                    "   (7, 150, CURRENT_DATE, 3) " +
-                    "ON CONFLICT DO NOTHING;";
-            statement.addBatch(createRestocks);
-
             String createPurchases = "INSERT INTO \"purchase\" (purchase_price, payment_method, cashier_id, user_id, purchase_date) " +
                     "VALUES " +
-                    "   (50, 'PIX', 2, 4, CURRENT_DATE)," +
+                    "   (50, 'PIX', 2, 3, CURRENT_DATE)," +
                     "   (19, 'CREDIT_CARD', 2, 1, CURRENT_DATE)," +
-                    "   (4, 'DEBIT_CARD', 1, 4, CURRENT_DATE) " +
+                    "   (4, 'DEBIT_CARD', 1, 3, CURRENT_DATE) " +
                     "ON CONFLICT DO NOTHING;";
             statement.addBatch(createPurchases);
 

@@ -3,8 +3,6 @@ package com.samnsc.Controller;
 import com.samnsc.Model.Item;
 import com.samnsc.View.ItemView;
 
-import java.awt.event.ActionListener;
-
 public class ItemController {
     private final Item item;
     private final ItemView itemView;

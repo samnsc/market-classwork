@@ -6,7 +6,7 @@ import com.samnsc.Model.Worker;
 import javax.swing.*;
 
 public class CashierView extends JFrame {
-    private CashierPanelController cashierPanelController;
+    private final CashierPanelController cashierPanelController;
 
     public CashierView(Worker cashier) {
         super("Caixa");

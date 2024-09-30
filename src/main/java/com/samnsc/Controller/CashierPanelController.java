@@ -1,7 +1,6 @@
 package com.samnsc.Controller;
 
 import com.samnsc.Database;
-import com.samnsc.Model.Client;
 import com.samnsc.Model.Item;
 import com.samnsc.Model.User;
 import com.samnsc.Model.Worker;
@@ -166,7 +165,7 @@ public class CashierPanelController {
             itemStatement.executeBatch();
         } catch (SQLException exception) {
             if (generatedKey != -1) {
-                try (PreparedStatement removePurchaseStatement = Database.getConnection().prepareStatement("DELETE FROM \"purchase\" WHERE id = ?");) {
+                try (PreparedStatement removePurchaseStatement = Database.getConnection().prepareStatement("DELETE FROM \"purchase\" WHERE id = ?")) {
                     removePurchaseStatement.setInt(1, generatedKey);
                     removePurchaseStatement.execute();
                 } catch (SQLException sqlException) {

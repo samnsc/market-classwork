@@ -32,11 +32,7 @@ public class ItemView extends JPanel {
         this.setMaximumSize(new Dimension(Integer.MAX_VALUE, (int) this.getPreferredSize().getHeight()));
     }
 
-    public void changeAmount(double amount) {
-        priceLabel.setText(String.format("%.2f x %s = %.2f", item.getProduct().getSellingPrice(), getFormattedProductAmount(item.getAmount()), item.getProduct().getSellingPrice() * item.getAmount()));
-    }
-
-    private String getFormattedProductAmount(double amount) {
+    private String getFormattedProductAmount() {
         if (item.getProduct().getMeasurementType() == Product.MeasurementType.UNIT) {
             return String.valueOf((int) item.getAmount());
         } else {

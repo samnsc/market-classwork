@@ -2,10 +2,8 @@ package com.samnsc.Controller;
 
 import com.samnsc.Database;
 import com.samnsc.Model.Worker;
-import com.samnsc.View.CashierView;
 import com.samnsc.View.LoginView;
 
-import javax.swing.*;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,18 +20,16 @@ public class LoginController {
         try {
             Worker worker = Worker.checkCredentials(loginView.getUsername(), loginView.getPassword());
 
-            if (worker != null) {
+            if (worker != null && worker.getEndDate() == null) {
                 switch (worker.getWorkerType()) {
                     case MANAGER: {
                         loginView.setVisible(false);
+                        ManagerController managerController = new ManagerController(worker);
                         break;
                     }
                     case CASHIER: {
                         loginView.setVisible(false);
-                        CashierController cashierView = new CashierController(worker);
-                        break;
-                    }
-                    case WAREHOUSE: {
+                        CashierController cashierController = new CashierController(worker);
                         break;
                     }
                 }
