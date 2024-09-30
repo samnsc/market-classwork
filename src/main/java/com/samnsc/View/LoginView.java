@@ -12,18 +12,28 @@ public class LoginView extends JFrame {
     public LoginView(ActionListener loginButtonAction, ActionListener sampleDataButtonAction) {
         super("Entre na sua conta");
 
+        JLabel usernameLabel = new JLabel("Login");
         usernameField = new JTextField();
         usernameField.setColumns(10);
+        JPanel usernamePanel = new JPanel();
+        usernamePanel.setLayout(new BoxLayout(usernamePanel, BoxLayout.Y_AXIS));
+        usernamePanel.add(usernameLabel);
+        usernamePanel.add(usernameField);
 
+        JLabel passwordLabel = new JLabel("Senha");
         passwordField = new JPasswordField();
         passwordField.setColumns(10);
+        JPanel passwordPanel = new JPanel();
+        passwordPanel.setLayout(new BoxLayout(passwordPanel, BoxLayout.Y_AXIS));
+        passwordPanel.add(passwordLabel);
+        passwordPanel.add(passwordField);
 
         JPanel loginPanel = new JPanel(new GridBagLayout());
         GridBagConstraints bottom = new GridBagConstraints();
         bottom.anchor = GridBagConstraints.SOUTH;
         bottom.weighty = 1;
-        loginPanel.add(usernameField, bottom);
-        loginPanel.add(passwordField, bottom);
+        loginPanel.add(usernamePanel, bottom);
+        loginPanel.add(passwordPanel, bottom);
 
         errorText = new JLabel("Login ou senha incorreta!");
         errorText.setAlignmentX(Component.CENTER_ALIGNMENT);
